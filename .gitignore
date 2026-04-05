@@ -1,0 +1,52 @@
+# Environment files - 敏感資訊不要提交！
+# 注意：主 .env 檔案可以提交（只用來切換環境）
+# 但 config/ 下的環境配置檔包含敏感資訊，不可提交
+config/.env.local
+config/.env.dev
+config/.env.prod
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.claude
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite3

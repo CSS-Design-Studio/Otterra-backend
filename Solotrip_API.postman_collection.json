@@ -1,0 +1,530 @@
+{
+	"info": {
+		"_postman_id": "solotrip-api-collection",
+		"name": "Solotrip API",
+		"description": "完整的 Solotrip FastAPI 後端測試集合\n\n使用方式：\n1. 先執行「用戶註冊」或「用戶登入」\n2. 登入成功後，access_token 會自動儲存到環境變數\n3. 其他需要認證的請求會自動使用 token",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "檢查 API 是否正常運作"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "用戶註冊",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// 如果註冊成功，儲存用戶資訊",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"user_id\", jsonData.id);",
+									"    pm.collectionVariables.set(\"user_email\", jsonData.email);",
+									"    console.log(\"註冊成功，用戶ID: \" + jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"username\": \"testuser\",\n    \"first_name\": \"Test\",\n    \"last_name\": \"User\",\n    \"password\": \"SecurePassword123!\",\n    \"bio\": \"這是測試用戶的個人簡介\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/save",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"save"
+							]
+						},
+						"description": "創建新用戶帳號"
+					},
+					"response": []
+				},
+				{
+					"name": "用戶登入",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// 如果登入成功，自動儲存 access_token",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"access_token\", jsonData.access_token);",
+									"    console.log(\"登入成功，Token 已儲存\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email_or_phone\": \"test@example.com\",\n    \"password\": \"SecurePassword123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"login"
+							]
+						},
+						"description": "用戶登入並獲取 JWT token"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Trips",
+			"item": [
+				{
+					"name": "創建旅程",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// 儲存創建的旅程 ID",
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"trip_id\", jsonData.id);",
+									"    console.log(\"旅程創建成功，ID: \" + jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"日本東京 5 日遊\",\n    \"description\": \"探索東京的美食與文化\",\n    \"start_date\": \"2026-03-01\",\n    \"end_date\": \"2026-03-05\",\n    \"status\": \"planning\",\n    \"is_public\": false,\n    \"budget_amount\": 50000,\n    \"budget_currency\": \"TWD\",\n    \"destinations\": [\n        {\n            \"name\": \"淺草寺\",\n            \"description\": \"東京最古老的寺廟\",\n            \"address\": \"東京都台東區淺草2-3-1\",\n            \"latitude\": 35.7147651,\n            \"longitude\": 139.7966553,\n            \"visit_date\": \"2026-03-01\",\n            \"visit_start_time\": \"09:00:00\",\n            \"visit_end_time\": \"11:00:00\",\n            \"order_index\": 1,\n            \"notes\": \"記得拍照\"\n        },\n        {\n            \"name\": \"東京晴空塔\",\n            \"description\": \"東京地標建築\",\n            \"address\": \"東京都墨田區押上1-1-2\",\n            \"latitude\": 35.7100627,\n            \"longitude\": 139.8107004,\n            \"visit_date\": \"2026-03-01\",\n            \"visit_start_time\": \"14:00:00\",\n            \"visit_end_time\": \"17:00:00\",\n            \"order_index\": 2,\n            \"notes\": \"提前訂票\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trips",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips"
+							]
+						},
+						"description": "創建新旅程（可同時添加目的地）"
+					},
+					"response": []
+				},
+				{
+					"name": "獲取我的旅程列表",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trips?page=1&page_size=10&include_destinations=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "頁碼（從 1 開始）"
+								},
+								{
+									"key": "page_size",
+									"value": "10",
+									"description": "每頁數量（1-100）"
+								},
+								{
+									"key": "status",
+									"value": "planning",
+									"description": "過濾狀態：planning/ongoing/completed/cancelled",
+									"disabled": true
+								},
+								{
+									"key": "include_destinations",
+									"value": "true",
+									"description": "是否包含目的地列表"
+								}
+							]
+						},
+						"description": "獲取當前用戶的旅程列表（分頁）"
+					},
+					"response": []
+				},
+				{
+					"name": "獲取單個旅程",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}?include_destinations=true",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}"
+							],
+							"query": [
+								{
+									"key": "include_destinations",
+									"value": "true",
+									"description": "是否包含目的地列表"
+								}
+							]
+						},
+						"description": "獲取單個旅程的詳細資訊"
+					},
+					"response": []
+				},
+				{
+					"name": "更新旅程",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"日本東京 7 日深度遊\",\n    \"description\": \"探索東京的美食、文化與購物\",\n    \"end_date\": \"2026-03-07\",\n    \"status\": \"ongoing\",\n    \"budget_amount\": 70000\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}"
+							]
+						},
+						"description": "更新旅程資訊（只需提供要更新的欄位）"
+					},
+					"response": []
+				},
+				{
+					"name": "刪除旅程",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}"
+							]
+						},
+						"description": "刪除旅程"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Trip Destinations",
+			"item": [
+				{
+					"name": "添加目的地",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// 儲存創建的目的地 ID",
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"destination_id\", jsonData.id);",
+									"    console.log(\"目的地創建成功，ID: \" + jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"築地市場\",\n    \"description\": \"新鮮海鮮美食天堂\",\n    \"address\": \"東京都中央區築地5-2-1\",\n    \"latitude\": 35.6654861,\n    \"longitude\": 139.7706672,\n    \"visit_date\": \"2026-03-02\",\n    \"visit_start_time\": \"06:00:00\",\n    \"visit_end_time\": \"09:00:00\",\n    \"order_index\": 3,\n    \"notes\": \"早起吃海鮮丼\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}/destinations",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}",
+								"destinations"
+							]
+						},
+						"description": "為旅程添加新的目的地"
+					},
+					"response": []
+				},
+				{
+					"name": "更新目的地",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"築地外市場\",\n    \"description\": \"新鮮海鮮美食天堂（外市場）\",\n    \"visit_start_time\": \"07:00:00\",\n    \"notes\": \"改成 7 點出發\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trips/destinations/{{destination_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"destinations",
+								"{{destination_id}}"
+							]
+						},
+						"description": "更新目的地資訊（只需提供要更新的欄位）"
+					},
+					"response": []
+				},
+				{
+					"name": "刪除目的地",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trips/destinations/{{destination_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"destinations",
+								"{{destination_id}}"
+							]
+						},
+						"description": "刪除目的地"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_email",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "trip_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "destination_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
