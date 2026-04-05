@@ -2,8 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.schemas_DTO.auth import LoginRequest, TokenResponse, OAuthCallBackRequest
 from app.services.user_service import UserService, get_user_service
 from app.schemas_DTO.user import UserCreate, UserUpdate, UserResponse, UserProfileResponse
-from app.core.security import get_current_token, get_optional_token
+from app.core.security import get_current_token, get_optional_token, create_token, create_refresh_token, blacklist_token
 from app.core.rate_limit import rate_limit_login, rate_limit_register
+from app.db.redis import get_redis
+from datetime import datetime
 
 
 router = APIRouter()
@@ -106,14 +108,42 @@ def delete_user(
     return {"message": "User deleted successfully"}
 
 @router.post("/refresh", response_model=TokenResponse)
-def refresh_token(payload:dict = Depends(get_current_token)):
+def refresh_token(
+    payload: dict = Depends(get_current_token),
+    redis=Depends(get_redis),
+):
     """
-    Refresh users' token when it expired
+    Refresh access token using refresh token.
+    Blacklists the old refresh token (rotation).
     """
     if payload.get("type") != "refresh":
-        raise HTTPException(status_code = 401, detail = "Invalid token type")
-    
-    return{
+        raise HTTPException(status_code=401, detail="Invalid token type")
+
+    jti = payload.get("jti")
+    exp = payload.get("exp")
+    if jti and exp and redis:
+        ttl = exp - int(datetime.utcnow().timestamp())
+        if ttl > 0:
+            blacklist_token(jti, ttl, redis)
+
+    return {
         "access_token": create_token(sub=payload["sub"]),
         "refresh_token": create_refresh_token(sub=payload["sub"]),
     }
+
+
+@router.post("/logout", status_code=200)
+def logout(
+    current_user: dict = Depends(get_current_token),
+    redis=Depends(get_redis),
+):
+    """
+    登出端點 - 將當前 access token 加入黑名單
+    """
+    jti = current_user.get("jti")
+    exp = current_user.get("exp")
+    if jti and exp and redis:
+        ttl = exp - int(datetime.utcnow().timestamp())
+        if ttl > 0:
+            blacklist_token(jti, ttl, redis)
+    return {"message": "Logged out successfully"}

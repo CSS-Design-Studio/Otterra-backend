@@ -63,9 +63,9 @@ def build_rag_query(
     Limit to top 3 preferences to avoid diluting search precision.
     """
 
-    top_preferences = (preferences or [])[:3]
-    preference_terms = "".join(
-        PREFERENCE_QUERY_MAP.get(p, p) for p in top_preferences
+    top_preferences = (preferences or [])[:5]
+    preference_terms = " ".join(
+        PREFERENCE_QUERY_MAP.get(p.capitalize(), p) for p in top_preferences
     )
     return f"{destination} {preference_terms} {user_query} travel guide".strip()
 

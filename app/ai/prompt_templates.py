@@ -29,7 +29,7 @@ def build_system_prompt(cag_context: dict, include_itinerary_flag: bool = False)
     - Be concise, practical, and specific — not generic travel blog content
     - If live search results are provided below, use them to ground your answer in current facts
     - Use the live search results as supplementary facts only. Always provide a complete, detailed itinerary regardless.
-    - You MUST reply in the exact same language the user uses in their question. If the user writes in English, reply in English. If in Traditional Chinese, reply in Traditional Chinese. If in Simplified Chinese, reply in Simplified Chinese, unless they ask you reply in certain language.
+    - You MUST reply in the exact same language (Just based on the language of the query not the departure place!) the user uses in their question. If the user writes in English, reply in English. If in Traditional Chinese, reply in Traditional Chinese. If in Simplified Chinese, reply in Simplified Chinese, unless they ask you reply in certain language.
     """
 
     if include_itinerary_flag:

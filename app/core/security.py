@@ -67,9 +67,10 @@ def require_admin(payload: dict = Depends(get_current_token)) -> dict:
 
 def create_refresh_token(sub: str) -> str:
     payload = {
-        "sub" : sub,
-        "type" : "refresh",
-        "exp" : datetime.utcnow() + timedelta(seconds=settings.JWT_REFRESH_EXPIRATION_SECONDS),
+        "sub": sub,
+        "type": "refresh",
+        "jti": str(uuid.uuid4()),
+        "exp": datetime.utcnow() + timedelta(seconds=settings.JWT_REFRESH_EXPIRATION_SECONDS),
     }
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=ALGORITHM)
 
